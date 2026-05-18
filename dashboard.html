@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · La Fondiatta</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Cormorant+Garamond:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --carbon:#1E1C1B;
+    --carbon-soft:#2A2826;
+    --carbon-soft-2:#3A3735;
+    --tiza:#F2F0EE;
+    --beige:#E1D9C8;
+    --marron:#9B826A;
+    --marron-dark:#7d6852;
+    --gris:#ACA496;
+    --gris-dark:#6b655a;
+    --verde:#7ba05b;
+    --rojo:#c75450;
+    --amarillo:#d4a72c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:'Roboto',sans-serif;background:var(--carbon);color:var(--tiza);font-size:14px}
+  .italic-elegant{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    position:fixed;inset:0;background:var(--carbon);display:flex;
+    align-items:center;justify-content:center;z-index:1000;padding:20px
+  }
+  .login-box{
+    background:var(--carbon-soft);border:1px solid var(--carbon-soft-2);
+    border-radius:12px;padding:48px 40px;max-width:420px;width:100%;text-align:center
+  }
+  .login-logo{
+    font-family:'Roboto',sans-serif;font-weight:900;letter-spacing:.18em;
+    font-size:26px;color:var(--tiza);margin-bottom:8px
+  }
+  .login-tagline{
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+    color:var(--marron);font-size:18px;margin-bottom:36px
+  }
+  .login-title{font-size:13px;color:var(--gris);letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+  .login-input{
+    width:100%;padding:14px 16px;background:var(--carbon);border:1px solid var(--carbon-soft-2);
+    border-radius:8px;color:var(--tiza);font-size:15px;font-family:inherit;margin-bottom:14px
+  }
+  .login-input:focus{outline:none;border-color:var(--marron)}
+  .login-btn{
+    width:100%;padding:14px;background:var(--marron);border:none;border-radius:8px;
+    color:var(--tiza);font-weight:700;font-size:14px;letter-spacing:.05em;cursor:pointer;
+    text-transform:uppercase;transition:background .2s
+  }
+  .login-btn:hover{background:var(--marron-dark)}
+  .login-error{color:var(--rojo);font-size:13px;margin-top:12px;min-height:18px}
+
+  /* ---------- APP ---------- */
+  #app{display:none;min-height:100vh}
+  .topbar{
+    background:var(--carbon-soft);border-bottom:1px solid var(--carbon-soft-2);
+    padding:18px 28px;display:flex;justify-content:space-between;align-items:center;
+    position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:12px
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand-name{font-weight:900;letter-spacing:.16em;font-size:18px}
+  .brand-sub{font-size:11px;color:var(--gris);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+  .topbar-actions{display:flex;gap:10px;align-items:center}
+  .updated{font-size:11px;color:var(--gris)}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--carbon-soft-2);color:var(--tiza);
+    padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;
+    letter-spacing:.04em;transition:all .2s
+  }
+  .btn-ghost:hover{border-color:var(--marron);color:var(--marron)}
+
+  .container{padding:24px 28px;max-width:1600px;margin:0 auto}
+
+  /* ---------- FILTROS ---------- */
+  .filters{
+    background:var(--carbon-soft);border:1px solid var(--carbon-soft-2);
+    border-radius:10px;padding:18px;margin-bottom:24px
+  }
+  .filters-title{
+    font-size:11px;color:var(--gris);letter-spacing:.15em;text-transform:uppercase;
+    margin-bottom:12px;display:flex;justify-content:space-between;align-items:center
+  }
+  .filters-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px
+  }
+  .filter-group{display:flex;flex-direction:column;gap:4px}
+  .filter-label{font-size:11px;color:var(--gris);text-transform:uppercase;letter-spacing:.05em}
+  .filter-input, .filter-select{
+    background:var(--carbon);border:1px solid var(--carbon-soft-2);color:var(--tiza);
+    padding:9px 11px;border-radius:6px;font-size:13px;font-family:inherit;width:100%
+  }
+  .filter-input:focus, .filter-select:focus{outline:none;border-color:var(--marron)}
+  .btn-clear{
+    background:transparent;border:1px solid var(--marron);color:var(--marron);
+    padding:6px 12px;border-radius:5px;cursor:pointer;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;font-family:inherit
+  }
+  .btn-clear:hover{background:var(--marron);color:var(--tiza)}
+
+  /* ---------- KPIs ---------- */
+  .kpi-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;margin-bottom:24px
+  }
+  .kpi{
+    background:var(--carbon-soft);border:1px solid var(--carbon-soft-2);
+    border-radius:10px;padding:18px;position:relative;overflow:hidden
+  }
+  .kpi::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--marron)
+  }
+  .kpi-label{
+    font-size:10px;color:var(--gris);text-transform:uppercase;
+    letter-spacing:.12em;margin-bottom:8px
+  }
+  .kpi-value{font-size:24px;font-weight:700;color:var(--tiza);line-height:1.1}
+  .kpi-hint{font-size:11px;color:var(--gris);margin-top:6px}
+  .kpi-accent{color:var(--marron)}
+  .kpi-verde{color:var(--verde)}
+  .kpi-rojo{color:var(--rojo)}
+
+  /* ---------- SECCIONES / GRAFICOS ---------- */
+  .section-title{
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris);
+    margin:8px 0 14px 0;padding-bottom:6px;border-bottom:1px solid var(--carbon-soft-2)
+  }
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  @media(max-width:1000px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--carbon-soft);border:1px solid var(--carbon-soft-2);
+    border-radius:10px;padding:20px
+  }
+  .card-header{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:16px
+  }
+  .card-title{font-size:14px;font-weight:700;color:var(--tiza)}
+  .card-subtitle{font-size:11px;color:var(--gris)}
+
+  .chart-container{position:relative;height:280px}
+  .chart-container.tall{height:340px}
+
+  /* ---------- TABLAS ---------- */
+  .table-wrap{overflow-x:auto;max-height:420px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{
+    background:var(--carbon);position:sticky;top:0;text-align:left;padding:10px 12px;
+    font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gris);
+    border-bottom:1px solid var(--carbon-soft-2);cursor:pointer;user-select:none;white-space:nowrap
+  }
+  thead th:hover{color:var(--marron)}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--carbon-soft-2);white-space:nowrap}
+  tbody tr:hover{background:var(--carbon)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .badge{
+    display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;
+    font-weight:700;text-transform:uppercase;letter-spacing:.05em
+  }
+  .badge-sobrante{background:rgba(123,160,91,.15);color:var(--verde)}
+  .badge-faltante{background:rgba(199,84,80,.15);color:var(--rojo)}
+  .badge-pendiente{background:rgba(212,167,44,.15);color:var(--amarillo)}
+
+  /* ---------- ALERTAS ---------- */
+  .alerts{
+    background:var(--carbon-soft);border:1px solid var(--amarillo);border-left:3px solid var(--amarillo);
+    border-radius:10px;padding:16px 20px;margin-bottom:24px
+  }
+  .alerts-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--amarillo);margin-bottom:10px;font-weight:700}
+  .alert-item{font-size:13px;color:var(--tiza);margin:4px 0}
+  .alert-item strong{color:var(--amarillo)}
+
+  /* ---------- FOOTER ---------- */
+  .footer{
+    text-align:center;padding:24px;color:var(--gris);font-size:11px;
+    border-top:1px solid var(--carbon-soft-2);margin-top:30px
+  }
+  .footer .tagline{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--marron);font-size:14px}
+
+  /* ---------- LOADING ---------- */
+  .loading-overlay{
+    position:fixed;inset:0;background:rgba(30,28,27,.85);display:flex;
+    align-items:center;justify-content:center;z-index:200
+  }
+  .spinner{
+    width:40px;height:40px;border:3px solid var(--carbon-soft-2);
+    border-top-color:var(--marron);border-radius:50%;animation:spin 1s linear infinite
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{
+    background:var(--carbon-soft);border:1px solid var(--carbon-soft-2);color:var(--gris);
+    padding:9px 18px;border-radius:6px;cursor:pointer;font-size:12px;
+    text-transform:uppercase;letter-spacing:.06em;font-family:inherit;transition:all .2s
+  }
+  .tab.active{background:var(--marron);color:var(--tiza);border-color:var(--marron)}
+  .tab:hover:not(.active){color:var(--tiza);border-color:var(--marron)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  .mini-stats{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+  .mini-stat{font-size:12px;color:var(--gris)}
+  .mini-stat strong{color:var(--tiza);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">LA FONDIATTA</div>
+    <div class="login-tagline">pasión por tus momentos</div>
+    <div class="login-title">Dashboard de Gestión · Directores</div>
+    <input id="password-input" type="password" class="login-input" placeholder="Contraseña" autocomplete="off"/>
+    <button id="login-btn" class="login-btn">Ingresar</button>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <div>
+        <div class="brand-name">LA FONDIATTA</div>
+        <div class="brand-sub">Dashboard · Directores</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="updated" id="updated-label">—</span>
+      <button class="btn-ghost" id="btn-refresh">↻ Actualizar</button>
+      <button class="btn-ghost" id="btn-logout">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- FILTROS -->
+    <div class="filters">
+      <div class="filters-title">
+        <span>Filtros dinámicos</span>
+        <button class="btn-clear" id="btn-clear-filters">Limpiar filtros</button>
+      </div>
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Desde</label>
+          <input type="date" id="filter-from" class="filter-input"/>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Hasta</label>
+          <input type="date" id="filter-to" class="filter-input"/>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Cliente</label>
+          <select id="filter-cliente" class="filter-select"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Evento</label>
+          <select id="filter-evento" class="filter-select"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Empleado</label>
+          <select id="filter-empleado" class="filter-select"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Encargado</label>
+          <select id="filter-encargado" class="filter-select"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Zona</label>
+          <select id="filter-zona" class="filter-select"><option value="">Todas</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Función</label>
+          <select id="filter-funcion" class="filter-select"><option value="">Todas</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Estado de cierre</label>
+          <select id="filter-estado" class="filter-select">
+            <option value="">Todos</option>
+            <option value="Sobrante">Sobrante</option>
+            <option value="Faltante">Faltante</option>
+            <option value="Sin cierre">Sin cierre</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="section-title">Indicadores Clave</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Total Sueldos</div><div class="kpi-value kpi-accent" id="kpi-total">$0</div><div class="kpi-hint" id="kpi-total-hint">—</div></div>
+      <div class="kpi"><div class="kpi-label">Eventos</div><div class="kpi-value" id="kpi-eventos">0</div><div class="kpi-hint" id="kpi-eventos-hint">—</div></div>
+      <div class="kpi"><div class="kpi-label">Costo Promedio / Evento</div><div class="kpi-value" id="kpi-prom-evento">$0</div><div class="kpi-hint">por evento</div></div>
+      <div class="kpi"><div class="kpi-label">Empleados Activos</div><div class="kpi-value" id="kpi-empleados">0</div><div class="kpi-hint" id="kpi-empleados-hint">distintos</div></div>
+      <div class="kpi"><div class="kpi-label">Horas Trabajadas</div><div class="kpi-value" id="kpi-horas">0</div><div class="kpi-hint" id="kpi-horas-hint">acumuladas</div></div>
+      <div class="kpi"><div class="kpi-label">Viáticos Totales</div><div class="kpi-value" id="kpi-viaticos">$0</div><div class="kpi-hint" id="kpi-viaticos-hint">% del total</div></div>
+      <div class="kpi"><div class="kpi-label">Carga / Descarga</div><div class="kpi-value" id="kpi-cd">$0</div><div class="kpi-hint" id="kpi-cd-hint">% del total</div></div>
+      <div class="kpi"><div class="kpi-label">Clientes Activos</div><div class="kpi-value" id="kpi-clientes">0</div><div class="kpi-hint">en el período</div></div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="alerts" id="alerts-box" style="display:none">
+      <div class="alerts-title">⚠ Alertas Operativas</div>
+      <div id="alerts-list"></div>
+    </div>
+
+    <!-- EVOLUCION + TOP CLIENTES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Evolución de pagos en el tiempo</div>
+            <div class="card-subtitle">Total pagado por fecha de evento</div>
+          </div>
+        </div>
+        <div class="chart-container"><canvas id="chart-evolucion"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Top clientes</div>
+            <div class="card-subtitle">Por gasto en sueldos</div>
+          </div>
+        </div>
+        <div class="chart-container"><canvas id="chart-clientes"></canvas></div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUCIONES -->
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Por función</div><div class="card-subtitle">Distribución del costo</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chart-funcion"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Por zona</div><div class="card-subtitle">Viáticos según ubicación</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chart-zona"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Por encargado</div><div class="card-subtitle">Cuánto gestiona cada uno</div></div>
+        </div>
+        <div class="chart-container"><canvas id="chart-encargado"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABS DE DETALLES -->
+    <div class="section-title">Detalle por dimensión</div>
+    <div class="tabs">
+      <button class="tab active" data-tab="tab-eventos">Eventos</button>
+      <button class="tab" data-tab="tab-empleados">Empleados</button>
+      <button class="tab" data-tab="tab-clientes">Clientes</button>
+      <button class="tab" data-tab="tab-cierres">Cierres</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-eventos">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Detalle por evento</div>
+            <div class="card-subtitle">Costo total y resumen de cierre</div>
+          </div>
+          <button class="btn-ghost" onclick="exportCSV('tabla-eventos','eventos.csv')">⬇ Exportar CSV</button>
+        </div>
+        <div class="mini-stats" id="mini-eventos"></div>
+        <div class="table-wrap">
+          <table id="tabla-eventos">
+            <thead><tr>
+              <th data-sort="fecha">Fecha</th>
+              <th data-sort="evento">Evento</th>
+              <th data-sort="cliente">Cliente</th>
+              <th data-sort="encargado">Encargado</th>
+              <th class="num" data-sort="empleados">Emp.</th>
+              <th class="num" data-sort="horas">Horas</th>
+              <th class="num" data-sort="total">Sueldos</th>
+              <th class="num" data-sort="gastos">Gastos Ex.</th>
+              <th class="num" data-sort="dinero">Dinero Rec.</th>
+              <th data-sort="estado">Estado</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-empleados">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Detalle por empleado</div>
+            <div class="card-subtitle">Cuánto cobró cada persona</div>
+          </div>
+          <button class="btn-ghost" onclick="exportCSV('tabla-empleados','empleados.csv')">⬇ Exportar CSV</button>
+        </div>
+        <div class="mini-stats" id="mini-empleados"></div>
+        <div class="table-wrap">
+          <table id="tabla-empleados">
+            <thead><tr>
+              <th data-sort="empleado">Empleado</th>
+              <th data-sort="zona">Zona</th>
+              <th class="num" data-sort="eventos">Eventos</th>
+              <th class="num" data-sort="horas">Horas</th>
+              <th class="num" data-sort="subtotal">Subtotal Hs</th>
+              <th class="num" data-sort="cd">Carga/Desc</th>
+              <th class="num" data-sort="viaticos">Viáticos</th>
+              <th class="num" data-sort="total">Total</th>
+              <th class="num" data-sort="prom">Prom/Evento</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-clientes">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Detalle por cliente</div>
+            <div class="card-subtitle">Concentración y costos por cliente</div>
+          </div>
+          <button class="btn-ghost" onclick="exportCSV('tabla-clientes','clientes.csv')">⬇ Exportar CSV</button>
+        </div>
+        <div class="mini-stats" id="mini-clientes"></div>
+        <div class="table-wrap">
+          <table id="tabla-clientes">
+            <thead><tr>
+              <th data-sort="cliente">Cliente</th>
+              <th class="num" data-sort="eventos">Eventos</th>
+              <th class="num" data-sort="horas">Horas</th>
+              <th class="num" data-sort="total">Total Sueldos</th>
+              <th class="num" data-sort="prom">Prom/Evento</th>
+              <th class="num" data-sort="share">% del total</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-cierres">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Cierres financieros</div>
+            <div class="card-subtitle">Sobrante / Faltante por evento</div>
+          </div>
+          <button class="btn-ghost" onclick="exportCSV('tabla-cierres','cierres.csv')">⬇ Exportar CSV</button>
+        </div>
+        <div class="mini-stats" id="mini-cierres"></div>
+        <div class="table-wrap">
+          <table id="tabla-cierres">
+            <thead><tr>
+              <th data-sort="fecha">Fecha</th>
+              <th data-sort="evento">Evento</th>
+              <th data-sort="encargado">Encargado</th>
+              <th class="num" data-sort="sueldos">Sueldos</th>
+              <th class="num" data-sort="gastos">Gastos Ex.</th>
+              <th class="num" data-sort="dinero">Dinero Rec.</th>
+              <th class="num" data-sort="dev">Devolución</th>
+              <th data-sort="estado">Estado</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="tagline">Pasión por tus momentos.</div>
+    <div style="margin-top:6px">Dashboard interno · Solo Directores · v1.0</div>
+  </div>
+</div>
+
+<script>
+// ========================================================================
+// CONFIGURACIÓN
+// ========================================================================
+const CONFIG = {
+  // Cambiar esta contraseña por la que vos quieras. Se guarda solo en el browser.
+  password: "fondiatta2026",
+
+  // URL del Google Apps Script que devuelve los datos en JSON.
+  // Mientras no esté configurado, usa los datos demo embebidos.
+  // Reemplazar por la URL del webhook después de seguir la GUIA_IMPLEMENTACION.md
+  apiUrl: "",
+
+  // Colores del branding
+  colors: {
+    carbon: "#1E1C1B",
+    tiza: "#F2F0EE",
+    beige: "#E1D9C8",
+    marron: "#9B826A",
+    marronDark: "#7d6852",
+    gris: "#ACA496",
+    verde: "#7ba05b",
+    rojo: "#c75450",
+    amarillo: "#d4a72c"
+  },
+  paletteSerie: ["#9B826A","#E1D9C8","#ACA496","#7d6852","#7ba05b","#d4a72c","#c75450","#F2F0EE"]
+};
+
+// ========================================================================
+// DATOS DEMO EMBEBIDOS (se reemplazan al conectar el webhook)
+// ========================================================================
+const DATOS_DEMO = {"registros": [{"fecha": "2026-03-31", "evento": "Evento Danone Desayuno & Almuerzo Luz Umiri (21p)", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-03-31", "evento": "Evento Danone Desayuno & Almuerzo Luz Umiri (21p)", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig ", "cliente": "Maria Marta Honig", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig ", "cliente": "Maria Marta Honig", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig ", "cliente": "Maria Marta Honig", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig ", "cliente": "Maria Marta Honig", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 6.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 10000.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-02", "evento": "Ivan Shemi ", "cliente": "Ivan Shemi", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 67500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 75500.0}, {"fecha": "2026-04-02", "evento": "Ivan Shemi ", "cliente": "Ivan Shemi", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Bartender", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-03-27", "evento": "Evento Danone Desayuno/Break/Almuerzo Maria Quiroga (10p)", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-07", "evento": "Evento Peya Summit Log&Ops Día 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-04-07", "evento": "Evento Peya Summit Log&Ops Día 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-07", "evento": "Evento Peya Summit Log&Ops Día 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 82500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 90500.0}, {"fecha": "2026-04-07", "evento": "Evento Peya Summit Log&Ops Día 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 69300.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 74300.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Otras Zonas", "subtotalHoras": 38500.0, "adicionalCD": 5000.0, "viaticos": 4000.0, "total": 47500.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Daniela Beatriz Bareiro", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Iara Ludmila Sánchez", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 82500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 90500.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 44100.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 49100.0}, {"fecha": "2026-04-09", "evento": "Evento Almuerzo ZS 9/4 (20p)", "cliente": "Almuerzo ZS 9/4", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 15.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 82500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 90500.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 15.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 82500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 90500.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 15.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 15.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 15.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 112500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 120500.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Otras Zonas", "subtotalHoras": 33000.0, "adicionalCD": 5000.0, "viaticos": 4000.0, "total": 42000.0}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Maia Valentina Escobar", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Kevin Alfaro", "funcion": "Mozo Esp", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 34500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 42500.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 37500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 45500.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 44100.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 49100.0}, {"fecha": "2026-04-09", "evento": "Evento Almuerzo ZS 9/4 (20p)", "cliente": "Almuerzo ZS 9/4", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-09", "evento": "Evento Almuerzo ZS 9/4 (20p)", "cliente": "Almuerzo ZS 9/4", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Encargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 52500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 57500.0}, {"fecha": "2026-04-06", "evento": "Evento Desayuno Danone (14 p)", "cliente": "Danone", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 37800.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 42800.0}, {"fecha": "2026-04-07", "evento": "Evento Danone PAEDS (7p)", "cliente": "Danone", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 66000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 74000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 66000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 74000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 90000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 98000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 75600.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 80600.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Maia Valentina Escobar", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 67500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 75500.0}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Daiana Gisela Contreras", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Gisela Analía Schinca", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-15", "evento": "Almuerzo Tienda Nube", "cliente": "Almuerzo Tienda Nube", "encargado": "Denisse", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-15", "evento": "Almuerzo Tienda Nube", "cliente": "Almuerzo Tienda Nube", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-04-15", "evento": "Almuerzo Tienda Nube", "cliente": "Almuerzo Tienda Nube", "encargado": "Denisse", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Escobar", "subtotalHoras": 27500.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 40500.0}, {"fecha": "2026-04-14", "evento": "Evento Microsoft - Anto (MAÑANA 35p) (TARDE 25p)", "cliente": "Microsoft", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 75600.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 80600.0}, {"fecha": "2026-04-14", "evento": "Evento Microsoft - Anto (MAÑANA 35p) (TARDE 25p)", "cliente": "Microsoft", "encargado": "Denisse", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-14", "evento": "Evento Microsoft - Anto (MAÑANA 35p) (TARDE 25p)", "cliente": "Microsoft", "encargado": "Denisse", "empleado": "Luz Candela Rojas", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 0, "total": 60000.0}, {"fecha": "2026-04-14", "evento": "Evento Microsoft - Anto (MAÑANA 35p) (TARDE 25p)", "cliente": "Microsoft", "encargado": "Denisse", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 65000.0}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 16.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 80000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 88000.0}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 16.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 88000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 96000.0}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 16.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 120000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 128000.0}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-16", "evento": "Evento UNICEF (60p)", "cliente": "UNICEF", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-04-16", "evento": "Evento UNICEF (60p)", "cliente": "UNICEF", "encargado": "Denisse", "empleado": "Sharon Cinthia Cajal", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-16", "evento": "Evento UNICEF (60p)", "cliente": "UNICEF", "encargado": "Denisse", "empleado": "Morena Ailen Sanchez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Kevin Alfaro", "funcion": "Mozo Esp", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 51750.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 59750.0}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 90000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 98000.0}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "empleado": "Damaris Melina Leonardi", "funcion": "Mozo", "horas": 12.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-17", "evento": "Evento Amcor Pilar (40p)", "cliente": "Amcor", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-17", "evento": "Evento Amcor Pilar (40p)", "cliente": "Amcor", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-17", "evento": "Evento Amcor Pilar (40p)", "cliente": "Amcor", "encargado": "Guillermina", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-17", "evento": "Evento Amcor Pilar (40p)", "cliente": "Amcor", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-14", "evento": "Evento Almuerzo Danone 14/4 (16p)", "cliente": "Danone", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 44100.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 49100.0}, {"fecha": "2026-04-17", "evento": "Pia zorraquin", "cliente": "Pia zorraquin", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 10000.0, "viaticos": 5000.0, "total": 46500.0}, {"fecha": "2026-04-22", "evento": "Evento Almuerzo Danone Angie Quiroga Directorio 22.4 (6p)", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-21", "evento": "Evento Desayuno Danone Lara Saccone (50p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-21", "evento": "Evento Desayuno Danone Lara Saccone (50p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-21", "evento": "Evento Desayuno Danone Lara Saccone (50p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-21", "evento": "Evento Summit People Día 1", "cliente": "Summit", "encargado": "Gaston", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 0, "adicionalCD": 0, "viaticos": 0, "total": 0}, {"fecha": "2026-04-21", "evento": "Evento Summit People Día 1", "cliente": "Summit", "encargado": "Gaston", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 0, "adicionalCD": 0, "viaticos": 0, "total": 0}, {"fecha": "2026-04-21", "evento": "Evento Summit People Día 1", "cliente": "Summit", "encargado": "Gaston", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-21", "evento": "Evento Summit People Día 1", "cliente": "Summit", "encargado": "Gaston", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig", "cliente": "Maria Marta Honig", "encargado": "Camila", "empleado": "Claudia Noemí Bareiro", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig", "cliente": "Maria Marta Honig", "encargado": "Camila", "empleado": "Juan Pablo Quinci", "funcion": "Parrillero", "horas": 4.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "", "subtotalHoras": 22000.0, "adicionalCD": 10000.0, "viaticos": 0, "total": 32000.0}, {"fecha": "2026-04-22", "evento": "Evento Peya Ailu Agropasión (13p)", "cliente": "Peya Ailu Agropasión", "encargado": "Gaston", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-04-22", "evento": "Evento Peya Ailu Agropasión (13p)", "cliente": "Peya Ailu Agropasión", "encargado": "Gaston", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-23", "evento": "Evento Summit People Día 3", "cliente": "Summit", "encargado": "Gaston", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-04-23", "evento": "Evento Summit People Día 3", "cliente": "Summit", "encargado": "Gaston", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-23", "evento": "Evento Summit People Día 3", "cliente": "Summit", "encargado": "Gaston", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-23", "evento": "Evento PeYa Fer Cots", "cliente": "PeYa Fer Cots", "encargado": "Gaston", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-23", "evento": "Evento PeYa Fer Cots", "cliente": "PeYa Fer Cots", "encargado": "Gaston", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-24", "evento": "Fran di lulio", "cliente": "Fran di lulio", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-24", "evento": "Fran di lulio", "cliente": "Fran di lulio", "encargado": "Gaston", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-24", "evento": "Fer cost peya", "cliente": "Fer cost peya", "encargado": "Gaston", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 40500.0}, {"fecha": "2026-04-24", "evento": "Fer cost peya", "cliente": "Fer cost peya", "encargado": "Gaston", "empleado": "Carmen Noemí Salmi Ibarra", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo Danone Lucía Greppi 24.4 (40p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo Danone Lucía Greppi 24.4 (40p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo Danone Lucía Greppi 24.4 (40p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Antonella Coppola", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo Danone Lucía Greppi 24.4 (40p)", "cliente": "Danone", "encargado": "Gaston", "empleado": "Mario Ezequiel Medina", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Escobar", "subtotalHoras": 33000.0, "adicionalCD": 10000.0, "viaticos": 8000.0, "total": 51000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Otras Zonas", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 4000.0, "total": 42500.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 40000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Vanina Ailen Mansilla", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Maia Valentina Escobar", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 44100.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 49100.0}, {"fecha": "2026-04-25", "evento": "Seisdedos 24/4", "cliente": "Seisdedos 24/4", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-04-25", "evento": "Seisdedos 24/4", "cliente": "Seisdedos 24/4", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Brenda Barrera", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Carmen Noemí Salmi Ibarra", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 52000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 8.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Moreno", "subtotalHoras": 44000.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 57000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 52000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 16.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 120000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 128000.0}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "Guillermina", "empleado": "Waltera Gastón Ciro Barrera", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Mario Ezequiel Medina", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Escobar", "subtotalHoras": 38500.0, "adicionalCD": 10000.0, "viaticos": 8000.0, "total": 56500.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Leandro Zalazar", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "", "subtotalHoras": 38500.0, "adicionalCD": 5000.0, "viaticos": 0, "total": 43500.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Daniela Beatriz Bareiro", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Zoe Tatiana Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Ricardo Emanuel Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Silvana Beatriz Cimino", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Otras Zonas", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 4000.0, "total": 54000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Selene Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Santiago Israel Sánchez", "funcion": "Parrillero", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Aldana Milagros López", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 63000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 68000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 10.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 55000.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 69000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Daniela Beatriz Bareiro", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Zoe Tatiana Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Ricardo Emanuel Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Silvana Beatriz Cimino", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Otras Zonas", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 4000.0, "total": 54000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Selene Prezel", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Santiago Israel Sánchez", "funcion": "Parrillero", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Aldana Milagros López", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 63000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 68000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 10.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 55000.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 69000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Román Alexis Ibáñez", "funcion": "Bartender", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Vanina Ailen Mansilla", "funcion": "Bartender", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "Gaston", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 10.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 5000.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Brenda Barrera", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Franco Iván Fernández", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Camila Nahir Prezel", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Damaris Melina Leonardi", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Emanuel Antonio Barrera", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Gonzalo Fabián Muñoz", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Iara Ludmila Sánchez", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "Gaston", "empleado": "Luz Candela Rojas", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 0, "total": 45000.0}, {"fecha": "2026-04-22", "evento": "Evento Summit People Día 2", "cliente": "Summit", "encargado": "Camila", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-22", "evento": "Evento Summit People Día 2", "cliente": "Summit", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-04-22", "evento": "Evento Summit People Día 2", "cliente": "Summit", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 63000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 68000.0}, {"fecha": "2026-04-22", "evento": "Evento Summit People Día 2", "cliente": "Summit", "encargado": "Camila", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-23", "evento": "Danone finance", "cliente": "Danone", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-04-24", "evento": "Lucas canibal", "cliente": "Lucas canibal", "encargado": "Camila", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 27500.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 41500.0}, {"fecha": "2026-04-24", "evento": "Lucas canibal", "cliente": "Lucas canibal", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 10000.0, "viaticos": 5000.0, "total": 46500.0}, {"fecha": "2026-04-27", "evento": "Evento Peya Daniel Sarlo 27.4", "cliente": "Peya Daniel Sarlo", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-27", "evento": "Evento Peya Daniel Sarlo 27.4", "cliente": "Peya Daniel Sarlo", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 37800.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 42800.0}, {"fecha": "2026-04-27", "evento": "Evento Almuerzo Danone Luz Umiri 27.4", "cliente": "Danone", "encargado": "Gaston", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Otras Zonas", "subtotalHoras": 33000.0, "adicionalCD": 5000.0, "viaticos": 4000.0, "total": 42000.0}, {"fecha": "2026-04-22", "evento": "Evento Peya Ailu Agropasión (13p)", "cliente": "Peya Ailu Agropasión", "encargado": "Gaston", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-04-22", "evento": "Evento Peya Ailu Agropasión (13p)", "cliente": "Peya Ailu Agropasión", "encargado": "Gaston", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-25", "evento": "Evento Julieta Mndz (35p)", "cliente": "Julieta Mndz", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-25", "evento": "Evento Julieta Mndz (35p)", "cliente": "Julieta Mndz", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-25", "evento": "Evento Julieta Mndz (35p)", "cliente": "Julieta Mndz", "encargado": "Guillermina", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-25", "evento": "Evento Julieta Mndz (35p)", "cliente": "Julieta Mndz", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Otras Zonas", "subtotalHoras": 45000.0, "adicionalCD": 5000.0, "viaticos": 4000.0, "total": 54000.0}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "Guillermina", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 50000.0}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 67500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 75500.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "Sí", "hsCD": 1.0, "zona": "Otras Zonas", "subtotalHoras": 38500.0, "adicionalCD": 5000.0, "viaticos": 4000.0, "total": 47500.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 52500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 60500.0}, {"fecha": "2026-04-29", "evento": "Evento MODO 29.4", "cliente": "MODO 29.4", "encargado": "Camila", "empleado": "Daniela Beatriz Bareiro", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-29", "evento": "Evento MODO 29.4", "cliente": "MODO 29.4", "encargado": "Camila", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-04-29", "evento": "Evento MODO 29.4", "cliente": "MODO 29.4", "encargado": "Camila", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 60000.0}, {"fecha": "2026-04-29", "evento": "Evento MODO 29.4", "cliente": "MODO 29.4", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 69300.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 74300.0}, {"fecha": "2026-05-01", "evento": "30/04/2026- evento Danone desayuno y almuerzo luz umiri", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 52000.0}, {"fecha": "2026-05-01", "evento": "30/04/2026- evento Danone desayuno y almuerzo luz umiri", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-01", "evento": "30/04/2026- evento Danone desayuno y almuerzo luz umiri", "cliente": "Danone", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-04-30", "evento": "Evento Antonella Aguirre Microsoft 30.4", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-04-30", "evento": "Evento Antonella Aguirre Microsoft 30.4", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-04-30", "evento": "Evento Antonella Aguirre Microsoft 30.4", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 37800.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 42800.0}, {"fecha": "2026-05-01", "evento": "Evento Fabi Bertotti 1.5", "cliente": "Fabi Bertotti 1.5", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-01", "evento": "Evento Fabi Bertotti 1.5", "cliente": "Fabi Bertotti 1.5", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-05-01", "evento": "Evento Fabi Bertotti 1.5", "cliente": "Fabi Bertotti 1.5", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-01", "evento": "Evento Fabi Bertotti 1.5", "cliente": "Fabi Bertotti 1.5", "encargado": "Guillermina", "empleado": "Leandro Zalazar", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 0, "total": 55000.0}, {"fecha": "2026-05-01", "evento": "Evento Josefina Ciero 1.5", "cliente": "Josefina Ciero 1.5", "encargado": "Gaston", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 33000.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 47000.0}, {"fecha": "2026-05-02", "evento": "Evento Laura Disney 2.5", "cliente": "Laura Disney 2.5", "encargado": "Gaston", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 10000.0, "viaticos": 5000.0, "total": 46500.0}, {"fecha": "2026-05-02", "evento": "Evento Laura Disney 2.5", "cliente": "Laura Disney 2.5", "encargado": "Gaston", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 5.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 27500.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 41500.0}, {"fecha": "2026-05-02", "evento": "Evento Laura Disney 2.5", "cliente": "Laura Disney 2.5", "encargado": "Gaston", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-05-02", "evento": "Evento Luz Ramiro 2.5", "cliente": "Luz Ramiro 2.5", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-02", "evento": "Evento Luz Ramiro 2.5", "cliente": "Luz Ramiro 2.5", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Bartender", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-02", "evento": "Evento Luz Ramiro 2.5", "cliente": "Luz Ramiro 2.5", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-02", "evento": "Evento Luz Ramiro 2.5", "cliente": "Luz Ramiro 2.5", "encargado": "Guillermina", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68500.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Mario Ezequiel Medina", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Escobar", "subtotalHoras": 49500.0, "adicionalCD": 10000.0, "viaticos": 8000.0, "total": 67500.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 9.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 49500.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 63500.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 67500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 75500.0}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 37500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 45500.0}, {"fecha": "2026-05-06", "evento": "Evento Diana Dueñas - Microsoft", "cliente": "Microsoft", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-05-06", "evento": "Evento Diana Dueñas - Microsoft", "cliente": "Microsoft", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-06", "evento": "Evento Almuerzo Danone Clotilde Día 2", "cliente": "Danone", "encargado": "Gaston", "empleado": "Carmen Noemí Salmi Ibarra", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-05-06", "evento": "Evento Almuerzo Danone Clotilde Día 2", "cliente": "Danone", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 30000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 38000.0}, {"fecha": "2026-05-06", "evento": "Evento Almuerzo Danone Clotilde Día 2", "cliente": "Danone", "encargado": "Gaston", "empleado": "Candela Soledad Amaya", "funcion": "Mozas Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-05-05", "evento": "Evento Peya Male Capello Día 1", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-05-05", "evento": "Evento Peya Male Capello Día 1", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-05-06", "evento": "Evento Peya Male Capello Día 2", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-05-06", "evento": "Evento Peya Male Capello Día 2", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-05-07", "evento": "Evento Peya Male Capello Día 3", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 25000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 33000.0}, {"fecha": "2026-05-07", "evento": "Evento Peya Male Capello Día 3", "cliente": "Peya Male Capello", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-05-07", "evento": "Evento Desayuno & Almuerzo IMAX", "cliente": "Desayuno & Almuerzo", "encargado": "Guillermina", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-05-07", "evento": "Evento Desayuno & Almuerzo IMAX", "cliente": "Desayuno & Almuerzo", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 49500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 57500.0}, {"fecha": "2026-05-07", "evento": "Evento Desayuno & Almuerzo IMAX", "cliente": "Desayuno & Almuerzo", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Leandro Zalazar", "funcion": "Parrillero", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 60500.0, "adicionalCD": 0.0, "viaticos": 0, "total": 60500.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Andrés Escudero", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 60000.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Josefina Roggero", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 60000.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Maia Valentina Escobar", "funcion": "Bartender", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 71500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 79500.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Santiago Israel Sánchez", "funcion": "Parrillero", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 71500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 79500.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Damaris Melina Leonardi", "funcion": "Mozo", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 65000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 73000.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Gonzalo Fabián Muñoz", "funcion": "Parrillero", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 71500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 79500.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Claudia Noemí Bareiro", "funcion": "Mozo", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 65000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 73000.0}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "Gaston", "empleado": "Daniela Beatriz Bareiro", "funcion": "Mozo", "horas": 13.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 65000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 73000.0}, {"fecha": "2026-05-08", "evento": "Microsoft 8/05", "cliente": "Microsoft", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 37800.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 42800.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Nazarena Morena Feliz", "funcion": "Bartender", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 0, "total": 44000.0}, {"fecha": "2026-05-10", "evento": "Rodrigo", "cliente": "Rodrigo", "encargado": "Gaston", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 8.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Escobar", "subtotalHoras": 44000.0, "adicionalCD": 10000.0, "viaticos": 8000.0, "total": 62000.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Cintia Beatriz Paredes", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-10", "evento": "Rodrigo", "cliente": "Rodrigo", "encargado": "Gaston", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-05-10", "evento": "Rodrigo", "cliente": "Rodrigo", "encargado": "Gaston", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 10000.0, "viaticos": 5000.0, "total": 65400.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Nazarena Morena Feliz", "funcion": "Bartender", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 0, "total": 44000.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Johana Castillo", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "Denisse", "empleado": "Cintia Beatriz Paredes", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-12", "evento": "Evento TGN 25p", "cliente": "TGN 25p", "encargado": "Guillermina", "empleado": "Cesar Agustin Peñaloza", "funcion": "Parrillero", "horas": 10.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 55000.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 69000.0}, {"fecha": "2026-05-12", "evento": "Evento TGN 25p", "cliente": "TGN 25p", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 50000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 58000.0}, {"fecha": "2026-05-12", "evento": "Evento TGN 25p", "cliente": "TGN 25p", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 10.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 75000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 83000.0}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "Guillermina", "empleado": "Arnaldo Andres Roa", "funcion": "Parrillero", "horas": 6.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 33000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 41000.0}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "Guillermina", "empleado": "Jonathan Brian Toledo", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "Guillermina", "empleado": "Román Alexis Ibáñez", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "Guillermina", "empleado": "Micaela Abigail Gomez", "funcion": "Mozas Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 44000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 52000.0}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Cintia Beatriz Paredes", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Antonella Coppola", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Damaris Melina Leonardi", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Zoe Tatiana Prezel", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 35000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 43000.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Emanuel Antonio Barrera", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Kevin Alfaro", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 52500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 60500.0}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "Guillermina", "empleado": "Mario Ezequiel Medina", "funcion": "Parrillero", "horas": 7.0, "cargaDesc": "No", "hsCD": 0, "zona": "Escobar", "subtotalHoras": 38500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 46500.0}, {"fecha": "2026-05-14", "evento": "Evento Allaria Fondos", "cliente": "Allaria Fondos", "encargado": "Guillermina", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 45000.0}, {"fecha": "2026-05-14", "evento": "Evento Allaria Fondos", "cliente": "Allaria Fondos", "encargado": "Guillermina", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 48000.0}, {"fecha": "2026-05-14", "evento": "Evento Allaria Fondos", "cliente": "Allaria Fondos", "encargado": "Guillermina", "empleado": "Guillermina puglia", "funcion": "Encargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 60000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 68000.0}, {"fecha": "2026-05-13", "evento": "Evento Kru Sports", "cliente": "Kru Sports", "encargado": "Gaston", "empleado": "Camila Monserrat Miranda Caballero", "funcion": "Mozo", "horas": 11.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 55000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 63000.0}, {"fecha": "2026-05-12", "evento": "12/5 armado desayuno para danone", "cliente": "Danone", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 31500.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 36500.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 56700.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 61700.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Cesar Agustin Peñaloza", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "Sí", "hsCD": 2.0, "zona": "Otras Zonas", "subtotalHoras": 45000.0, "adicionalCD": 10000.0, "viaticos": 4000.0, "total": 59000.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Cintia Carolina Batalla", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Cintia Beatriz Paredes", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 56700.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 61700.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Dalma Yanella Amaya", "funcion": "Mozas Subencargado/a", "horas": 5.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 27500.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 35500.0}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "Camila", "empleado": "Malvina Soledad Nieto", "funcion": "Mozo", "horas": 9.0, "cargaDesc": "No", "hsCD": 0, "zona": "Moreno", "subtotalHoras": 45000.0, "adicionalCD": 0.0, "viaticos": 8000.0, "total": 53000.0}, {"fecha": "2026-05-14", "evento": "Evento Peya Ine - Día 1", "cliente": "Peya Ine -", "encargado": "Camila", "empleado": "Camila Antonella Sofio", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-05-14", "evento": "Evento Peya Ine - Día 1", "cliente": "Peya Ine -", "encargado": "Camila", "empleado": "Denisse Luna López Espinosa", "funcion": "Subencargado/a", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 50400.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 55400.0}, {"fecha": "2026-05-14", "evento": "Evento Peya Ine - Día 1", "cliente": "Peya Ine -", "encargado": "Camila", "empleado": "Carlos Maximiliano Sofio", "funcion": "Mozo", "horas": 8.0, "cargaDesc": "No", "hsCD": 0, "zona": "Capital", "subtotalHoras": 40000.0, "adicionalCD": 0.0, "viaticos": 5000.0, "total": 45000.0}], "cierres": [{"fecha": "2026-04-18", "evento": "Evento Laura (60p)", "cliente": "Laura", "encargado": "Camila", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 500000.0, "devolucion": 500000.0, "estado": "Sobrante"}, {"fecha": "2026-04-17", "evento": "Pia zorraquin", "cliente": "Pia zorraquin", "encargado": "Camila", "totalSueldos": 46500.0, "gastosExtras": 0, "dineroRecibido": 75000.0, "devolucion": 28500.0, "estado": "Sobrante"}, {"fecha": "2026-04-17", "evento": "Evento Amcor Pilar (40p)", "cliente": "Amcor", "encargado": "Guillermina", "totalSueldos": 173000.0, "gastosExtras": 0, "dineroRecibido": 400000.0, "devolucion": 227000.0, "estado": "Sobrante"}, {"fecha": "2026-04-17", "evento": "Evento Pablo Servent (12p)", "cliente": "Pablo Servent", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-17", "evento": "Evento Summit Finance Dia 4", "cliente": "Summit", "encargado": "Denisse", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 160000.0, "devolucion": 160000.0, "estado": "Sobrante"}, {"fecha": "2026-04-16", "evento": "Evento Allaria Fondos DESAYUNO", "cliente": "Allaria Fondos DESAYUNO", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-16", "evento": "Evento Allaria Fondos ASADO", "cliente": "Allaria Fondos ASADO", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-16", "evento": "Evento Summit Finance Dia 3", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 346750.0, "gastosExtras": 17500.0, "dineroRecibido": 500000.0, "devolucion": 135750.0, "estado": "Sobrante"}, {"fecha": "2026-04-16", "evento": "Evento Worlteams Cami Pokorni (35p)", "cliente": "Worlteams Cami Pokorni", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-16", "evento": "Evento UNICEF (60p)", "cliente": "UNICEF", "encargado": "Denisse", "totalSueldos": 102500.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-15", "evento": "Almuerzo Tienda Nube", "cliente": "Almuerzo Tienda Nube", "encargado": "Denisse", "totalSueldos": 110000.0, "gastosExtras": 21000.0, "dineroRecibido": 150000.0, "devolucion": 19000.0, "estado": "Sobrante"}, {"fecha": "2026-04-15", "evento": "Evento Summit Finance Dia 2", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 448000.0, "gastosExtras": 0, "dineroRecibido": 850000.0, "devolucion": 402000.0, "estado": "Sobrante"}, {"fecha": "2026-04-14", "evento": "Evento Almuerzo Danone 14/4 (16p)", "cliente": "Danone", "encargado": "", "totalSueldos": 49100.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-14", "evento": "Evento Francisco (10p)", "cliente": "Francisco", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 90000.0, "devolucion": 90000.0, "estado": "Sobrante"}, {"fecha": "2026-04-14", "evento": "Evento Global Logic (140p)", "cliente": "Global Logic", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 1000000.0, "devolucion": 1000000.0, "estado": "Sobrante"}, {"fecha": "2026-04-14", "evento": "Evento Microsoft - Anto (MAÑANA 35p) (TARDE 25p)", "cliente": "Microsoft", "encargado": "Denisse", "totalSueldos": 273600.0, "gastosExtras": 0, "dineroRecibido": 260000.0, "devolucion": -13600.0, "estado": "Faltante"}, {"fecha": "2026-04-14", "evento": "Evento MSFT dia 2 (60p)", "cliente": "MSFT dia 2", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 400000.0, "devolucion": 400000.0, "estado": "Sobrante"}, {"fecha": "2026-04-14", "evento": "Evento Summit Finance Dia 1", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 287500.0, "gastosExtras": 0, "dineroRecibido": 300000.0, "devolucion": 12500.0, "estado": "Sobrante"}, {"fecha": "2026-04-13", "evento": "MSFT Día 1 (120p)", "cliente": "MSFT Día 1", "encargado": "Guillermina", "totalSueldos": 666600.0, "gastosExtras": 0, "dineroRecibido": 700000.0, "devolucion": 33400.0, "estado": "Sobrante"}, {"fecha": "2026-04-11", "evento": "Evento Angie Fragueiro", "cliente": "Angie Fragueiro", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 1500000.0, "devolucion": 1500000.0, "estado": "Sobrante"}, {"fecha": "2026-04-10", "evento": "Civil Martín y Loli", "cliente": "Civil Martín y", "encargado": "Guillermina", "totalSueldos": 301500.0, "gastosExtras": 0, "dineroRecibido": 400000.0, "devolucion": 98500.0, "estado": "Sobrante"}, {"fecha": "2026-04-10", "evento": "Evento Tío Juan Manuel Muzzio (33p)", "cliente": "Tío Juan Manuel", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 150000.0, "devolucion": 150000.0, "estado": "Sobrante"}, {"fecha": "2026-04-09", "evento": "Evento Peya Summit Log&Ops Día 3", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 547500.0, "gastosExtras": 17900.0, "dineroRecibido": 565400.0, "devolucion": 0.0, "estado": "Exacto"}, {"fecha": "2026-04-09", "evento": "Evento Allaria Fondos (30p)", "cliente": "Allaria Fondos", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 200000.0, "devolucion": 200000.0, "estado": "Sobrante"}, {"fecha": "2026-04-09", "evento": "Evento Almuerzo ZS 9/4 (20p)", "cliente": "Almuerzo ZS 9/4", "encargado": "Camila", "totalSueldos": 143500.0, "gastosExtras": 20000.0, "dineroRecibido": 150000.0, "devolucion": -13500.0, "estado": "Faltante"}, {"fecha": "2026-04-09", "evento": "Evento MODO ", "cliente": "MODO", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-08", "evento": "Evento Peya Summit Log&Ops Día 2", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 467000.0, "gastosExtras": 0, "dineroRecibido": 527000.0, "devolucion": 60000.0, "estado": "Sobrante"}, {"fecha": "2026-04-08", "evento": "Evento Almuerzo ZS 8/4 (20p)", "cliente": "Almuerzo ZS 8/4", "encargado": "Guillermina", "totalSueldos": 363200.0, "gastosExtras": 7100.0, "dineroRecibido": 250000.0, "devolucion": -120300.0, "estado": "Faltante"}, {"fecha": "2026-04-08", "evento": "Evento Desayuno Danone Luz Umiri (10p)", "cliente": "Danone", "encargado": "Guillermina", "totalSueldos": 0.0, "gastosExtras": 58000.0, "dineroRecibido": 650000.0, "devolucion": 592000.0, "estado": "Sobrante"}, {"fecha": "2026-04-07", "evento": "Evento Peya Summit Log&Ops Día 1", "cliente": "Summit", "encargado": "Guillermina", "totalSueldos": 296300.0, "gastosExtras": 0, "dineroRecibido": 280000.0, "devolucion": -16300.0, "estado": "Faltante"}, {"fecha": "2026-04-07", "evento": "Evento Danone PAEDS (7p)", "cliente": "Danone", "encargado": "Camila", "totalSueldos": 55400.0, "gastosExtras": 0, "dineroRecibido": 55400.0, "devolucion": 0.0, "estado": "Exacto"}, {"fecha": "2026-04-06", "evento": "Evento Desayuno Danone (14 p)", "cliente": "Danone", "encargado": "Camila", "totalSueldos": 42800.0, "gastosExtras": 0, "dineroRecibido": 144600.0, "devolucion": 101800.0, "estado": "Sobrante"}, {"fecha": "2026-04-02", "evento": "Ivan Shemi ", "cliente": "Ivan Shemi", "encargado": "Guillermina", "totalSueldos": 133000.0, "gastosExtras": 50000.0, "dineroRecibido": 305000.0, "devolucion": 122000.0, "estado": "Sobrante"}, {"fecha": "2026-03-31", "evento": "Evento Danone Desayuno & Almuerzo Luz Umiri (21p)", "cliente": "Danone", "encargado": "Guillermina", "totalSueldos": 116000.0, "gastosExtras": 35000.0, "dineroRecibido": 268000.0, "devolucion": 117000.0, "estado": "Sobrante"}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig ", "cliente": "Maria Marta Honig", "encargado": "Guillermina", "totalSueldos": 180000.0, "gastosExtras": 20000.0, "dineroRecibido": 200000.0, "devolucion": 0.0, "estado": "Exacto"}, {"fecha": "2026-03-27", "evento": "Evento Danone Desayuno/Break/Almuerzo Maria Quiroga (10p)", "cliente": "Danone", "encargado": "Guillermina", "totalSueldos": 0, "gastosExtras": 0, "dineroRecibido": 0.0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-15", "evento": "Evento Desayuno y Almuerzo Danone San Isidro Día 1 (12p)", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-16", "evento": "Evento Desayuno y Almuerzo Danone San Isidro Día 2(12p)", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-16", "evento": "Kavak", "cliente": "Kavak", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-17", "evento": "Evento Desayuno y Almuerzo Danone San Isidro Día 3 (12p)", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-21", "evento": "Evento Desayuno Danone Lara Saccone (50p)", "cliente": "Danone", "encargado": "", "totalSueldos": 99000.0, "gastosExtras": 2000.0, "dineroRecibido": 100000.0, "devolucion": -1000.0, "estado": "Faltante"}, {"fecha": "2026-04-21", "evento": "Evento Nestlé Pilar Andrea Chiloteguy (13p)", "cliente": "Nestlé Pilar Andrea", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-21", "evento": "Evento Summit People Día 1", "cliente": "Summit", "encargado": "", "totalSueldos": 121000.0, "gastosExtras": 0, "dineroRecibido": 300000.0, "devolucion": 179000.0, "estado": "Sobrante"}, {"fecha": "2026-04-22", "evento": "Evento Almuerzo Danone Angie Quiroga Directorio 22.4 (6p)", "cliente": "Danone", "encargado": "Guillermina", "totalSueldos": 41000.0, "gastosExtras": 0, "dineroRecibido": 0.0, "devolucion": -41000.0, "estado": "Faltante"}, {"fecha": "2026-04-22", "evento": "Evento Peya Ailu Agropasión (13p)", "cliente": "Peya Ailu Agropasión", "encargado": "", "totalSueldos": 259000.0, "gastosExtras": 42000.0, "dineroRecibido": 200000.0, "devolucion": -101000.0, "estado": "Faltante"}, {"fecha": "2026-04-22", "evento": "Evento Summit People Día 2", "cliente": "Summit", "encargado": "", "totalSueldos": 247000.0, "gastosExtras": 0, "dineroRecibido": 200000.0, "devolucion": -47000.0, "estado": "Faltante"}, {"fecha": "2026-04-23", "evento": "Evento Summit People Día 3", "cliente": "Summit", "encargado": "", "totalSueldos": 204000.0, "gastosExtras": 0, "dineroRecibido": 0.0, "devolucion": -204000.0, "estado": "Faltante"}, {"fecha": "2026-04-24", "evento": "Casamiento Michel y Greta (110p)", "cliente": "Casamiento Michel y", "encargado": "", "totalSueldos": 1666000.0, "gastosExtras": 77000.0, "dineroRecibido": 1180000.0, "devolucion": -563000.0, "estado": "Faltante"}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo Danone Lucía Greppi 24.4 (40p)", "cliente": "Danone", "encargado": "", "totalSueldos": 168000.0, "gastosExtras": 17000.0, "dineroRecibido": 200000.0, "devolucion": 15000.0, "estado": "Sobrante"}, {"fecha": "2026-04-24", "evento": "Evento Almuerzo EY 24.4 (84p)", "cliente": "Almuerzo EY 24.4", "encargado": "", "totalSueldos": 264100.0, "gastosExtras": 43790.0, "dineroRecibido": 250000.0, "devolucion": -57890.0, "estado": "Faltante"}, {"fecha": "2026-04-24", "evento": "Evento Familia Dodds (60p)", "cliente": "Familia Dodds", "encargado": "", "totalSueldos": 534000.0, "gastosExtras": 18700.0, "dineroRecibido": 800000.0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-24", "evento": "Evento Francisco Di Lullo CCU (20p)", "cliente": "Francisco Di Lullo", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-25", "evento": "Evento Julieta Mndz (35p)", "cliente": "Julieta Mndz", "encargado": "", "totalSueldos": 173000.0, "gastosExtras": 12000.0, "dineroRecibido": 260000.0, "devolucion": 75000.0, "estado": "Sobrante"}, {"fecha": "2026-04-25", "evento": "Torneo de Padel - Testorelli (100p)", "cliente": "Torneo de Padel", "encargado": "", "totalSueldos": 540000.0, "gastosExtras": 0, "dineroRecibido": 800000.0, "devolucion": 260000.0, "estado": "Sobrante"}, {"fecha": "2026-03-31", "evento": "Maria Marta Honig", "cliente": "Maria Marta Honig", "encargado": "Camila", "totalSueldos": 70000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-27", "evento": "Evento Peya Daniel Sarlo 27.4", "cliente": "Peya Daniel Sarlo", "encargado": "", "totalSueldos": 80800.0, "gastosExtras": 0, "dineroRecibido": 100000.0, "devolucion": 19200.0, "estado": "Sobrante"}, {"fecha": "2026-04-28", "evento": "Evento GMC 28.4", "cliente": "GMC 28.4", "encargado": "", "totalSueldos": 287000.0, "gastosExtras": 73000.0, "dineroRecibido": 360000.0, "devolucion": 0.0, "estado": "Exacto"}, {"fecha": "2026-04-28", "evento": "Evento Grupo Mass / Banco Corrientes 28.4", "cliente": "Grupo Mass /", "encargado": "", "totalSueldos": 290000.0, "gastosExtras": 15000.0, "dineroRecibido": 300000.0, "devolucion": -5000.0, "estado": "Faltante"}, {"fecha": "2026-04-29", "evento": "Evento Danone San Isidro 29.4", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 140000.0, "devolucion": 140000.0, "estado": "Sobrante"}, {"fecha": "2026-05-01", "evento": "Evento Fabi Bertotti 1.5", "cliente": "Fabi Bertotti 1.5", "encargado": "", "totalSueldos": 255000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-01", "evento": "Evento Josefina Ciero 1.5", "cliente": "Josefina Ciero 1.5", "encargado": "", "totalSueldos": 47000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-02", "evento": "Evento Laura Disney 2.5", "cliente": "Laura Disney 2.5", "encargado": "", "totalSueldos": 123500.0, "gastosExtras": 43000.0, "dineroRecibido": 240000.0, "devolucion": 73500.0, "estado": "Sobrante"}, {"fecha": "2026-05-02", "evento": "Evento Luz Ramiro 2.5", "cliente": "Luz Ramiro 2.5", "encargado": "", "totalSueldos": 274000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-27", "evento": "Evento Almuerzo Danone Luz Umiri 27.4", "cliente": "Danone", "encargado": "", "totalSueldos": 42000.0, "gastosExtras": 0, "dineroRecibido": 0.0, "devolucion": -42000.0, "estado": "Faltante"}, {"fecha": "2026-04-28", "evento": "Evento JLL (Nunas) 28.4", "cliente": "JLL (Nunas) 28.4", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-29", "evento": "Evento Chelo 29.4", "cliente": "Chelo 29.4", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 100000.0, "devolucion": 100000.0, "estado": "Sobrante"}, {"fecha": "2026-04-29", "evento": "Evento MODO 29.4", "cliente": "MODO 29.4", "encargado": "", "totalSueldos": 260300.0, "gastosExtras": 0, "dineroRecibido": 250000.0, "devolucion": -10300.0, "estado": "Faltante"}, {"fecha": "2026-04-30", "evento": "Evento Antonella Aguirre Microsoft 30.4", "cliente": "Microsoft", "encargado": "", "totalSueldos": 121800.0, "gastosExtras": 0, "dineroRecibido": 150000.0, "devolucion": 28200.0, "estado": "Sobrante"}, {"fecha": "2026-04-23", "evento": "Evento PeYa Fer Cots", "cliente": "PeYa Fer Cots", "encargado": "Gaston", "totalSueldos": 82000.0, "gastosExtras": 10200.0, "dineroRecibido": 100000.0, "devolucion": 7800.0, "estado": "Sobrante"}, {"fecha": "2026-04-24", "evento": "Fran di lulio", "cliente": "Fran di lulio", "encargado": "Gaston", "totalSueldos": 89500.0, "gastosExtras": 0, "dineroRecibido": 150000.0, "devolucion": 60500.0, "estado": "Sobrante"}, {"fecha": "2026-04-24", "evento": "Fer cost peya", "cliente": "Fer cost peya", "encargado": "Gaston", "totalSueldos": 78500.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-24", "evento": "Seisdedos 24/4", "cliente": "Seisdedos 24/4", "encargado": "Guillermina", "totalSueldos": 68500.0, "gastosExtras": 0, "dineroRecibido": 150000.0, "devolucion": 81500.0, "estado": "Sobrante"}, {"fecha": "2026-04-23", "evento": "Danone finance", "cliente": "Danone", "encargado": "Camila", "totalSueldos": 36500.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-25", "evento": "Lucas canibal", "cliente": "Lucas canibal", "encargado": "Camila", "totalSueldos": 88000.0, "gastosExtras": 0, "dineroRecibido": 100000.0, "devolucion": 12000.0, "estado": "Sobrante"}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA ", "cliente": "Sancor", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 4000.0, "dineroRecibido": 800000.0, "devolucion": 796000.0, "estado": "Sobrante"}, {"fecha": "2026-05-05", "evento": "Evento Almuerzo Danone Clotilde Día 1", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios ", "cliente": "Nike Avios", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 182500.0, "devolucion": 182500.0, "estado": "Sobrante"}, {"fecha": "2026-05-05", "evento": "Evento Peya Male Capello Día 1", "cliente": "Peya Male Capello", "encargado": "", "totalSueldos": 69500.0, "gastosExtras": 0, "dineroRecibido": 130000.0, "devolucion": 60500.0, "estado": "Sobrante"}, {"fecha": "2026-05-06", "evento": "Evento Almuerzo Danone Clotilde Día 2", "cliente": "Danone", "encargado": "", "totalSueldos": 117000.0, "gastosExtras": 0, "dineroRecibido": 200000.0, "devolucion": 83000.0, "estado": "Sobrante"}, {"fecha": "2026-05-06", "evento": "Evento Diana Dueñas - Microsoft", "cliente": "Microsoft", "encargado": "", "totalSueldos": 91000.0, "gastosExtras": 0, "dineroRecibido": 100000.0, "devolucion": 9000.0, "estado": "Sobrante"}, {"fecha": "2026-05-06", "evento": "Evento Peya Male Capello Día 2", "cliente": "Peya Male Capello", "encargado": "", "totalSueldos": 69500.0, "gastosExtras": 0, "dineroRecibido": 100000.0, "devolucion": 30500.0, "estado": "Sobrante"}, {"fecha": "2026-05-07", "evento": "Evento Almuerzo Danone Clotilde Día 3", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-07", "evento": "Evento Desayuno & Almuerzo IMAX", "cliente": "Desayuno & Almuerzo", "encargado": "", "totalSueldos": 168000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-07", "evento": "Evento Peya Male Capello Día 3", "cliente": "Peya Male Capello", "encargado": "", "totalSueldos": 69500.0, "gastosExtras": 13000.0, "dineroRecibido": 87000.0, "devolucion": 4500.0, "estado": "Sobrante"}, {"fecha": "2026-05-07", "evento": "Torneo de Truco Parde La Mejor", "cliente": "Torneo de Truco", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-09", "evento": "Evento Virginia Mihura", "cliente": "Virginia Mihura", "encargado": "", "totalSueldos": 342800.0, "gastosExtras": 0, "dineroRecibido": 450000.0, "devolucion": 107200.0, "estado": "Sobrante"}, {"fecha": "2026-05-09", "evento": "Martu & Marian", "cliente": "Martu & Marian", "encargado": "", "totalSueldos": 638000.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-04-30", "evento": "30/04/2026- evento Danone desayuno y almuerzo luz umiri", "cliente": "Danone", "encargado": "Guillermina", "totalSueldos": 168000.0, "gastosExtras": 0, "dineroRecibido": 200000.0, "devolucion": 32000.0, "estado": "Sobrante"}, {"fecha": "2026-05-04", "evento": "Evento Sancor Seguros - AFA", "cliente": "Sancor", "encargado": "Guillermina", "totalSueldos": 427500.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-06", "evento": "Evento Adidas", "cliente": "Adidas", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-05", "evento": "Evento Nike Avios", "cliente": "Nike Avios", "encargado": "Guillermina", "totalSueldos": 182500.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-08", "evento": "Microsoft 8/05", "cliente": "Microsoft", "encargado": "Denisse", "totalSueldos": 42800.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-10", "evento": "Rodrigo", "cliente": "Rodrigo", "encargado": "Gaston", "totalSueldos": 182800.0, "gastosExtras": 0, "dineroRecibido": 400000.0, "devolucion": 217200.0, "estado": "Sobrante"}, {"fecha": "2026-05-12", "evento": "Evento TGN 25p", "cliente": "TGN 25p", "encargado": "", "totalSueldos": 210000.0, "gastosExtras": 25000.0, "dineroRecibido": 200000.0, "devolucion": -35000.0, "estado": "Faltante"}, {"fecha": "2026-05-12", "evento": "Evento BIOGEN ?", "cliente": "BIOGEN ?", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-13", "evento": "Evento 3m Sunset", "cliente": "3m Sunset", "encargado": "", "totalSueldos": 257000.0, "gastosExtras": 0, "dineroRecibido": 250000.0, "devolucion": -7000.0, "estado": "Faltante"}, {"fecha": "2026-05-13", "evento": "Evento Kru Sports", "cliente": "Kru Sports", "encargado": "", "totalSueldos": 63000.0, "gastosExtras": 57900.0, "dineroRecibido": 150000.0, "devolucion": 29100.0, "estado": "Sobrante"}, {"fecha": "2026-05-13", "evento": "Evento Laura Ramos Microsoft", "cliente": "Microsoft", "encargado": "", "totalSueldos": 376900.0, "gastosExtras": 6000.0, "dineroRecibido": 450000.0, "devolucion": 67100.0, "estado": "Sobrante"}, {"fecha": "2026-05-14", "evento": "Evento 3M (14.5)", "cliente": "3M (14.5)", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-14", "evento": "Evento Allaria Fondos", "cliente": "Allaria Fondos", "encargado": "", "totalSueldos": 161000.0, "gastosExtras": 30000.0, "dineroRecibido": 240000.0, "devolucion": 49000.0, "estado": "Sobrante"}, {"fecha": "2026-05-14", "evento": "Evento Leo Antoniolli", "cliente": "Leo Antoniolli", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-14", "evento": "Evento Peya Ine - Día 1", "cliente": "Peya Ine -", "encargado": "", "totalSueldos": 155800.0, "gastosExtras": 17000.0, "dineroRecibido": 220000.0, "devolucion": 47200.0, "estado": "Sobrante"}, {"fecha": "2026-05-14", "evento": "Evento Phillip Morris?", "cliente": "Phillip Morris?", "encargado": "", "totalSueldos": 458000.0, "gastosExtras": 52500.0, "dineroRecibido": 1000000.0, "devolucion": 489500.0, "estado": "Sobrante"}, {"fecha": "2026-05-15", "evento": "Evento Peya Ine - Día 2", "cliente": "Peya Ine -", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-16", "evento": "Evento VIR", "cliente": "VIR", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-16", "evento": "Evento Valen Zervino ?", "cliente": "Valen Zervino ?", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-18", "evento": "Peya Ailu 18.5", "cliente": "Peya Ailu 18.5", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-18", "evento": "Evento Serv. Comp. Danone 18.5", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-19", "evento": "3M 19.5", "cliente": "3M 19.5", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-19", "evento": "Evento Peya Agencia Tocaya Día1", "cliente": "Peya Agencia Tocaya", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-20", "evento": "Evento Peya Agencia Tocaya Día2", "cliente": "Peya Agencia Tocaya", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-19", "evento": "Evento Peya Marga Día 1 19.5", "cliente": "Peya Marga Día", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-20", "evento": "Evento Peya Marga Día 2 20.5", "cliente": "Peya Marga Día", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-19", "evento": "Evento Serv. Comp. Danone 19.5", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-20", "evento": "Evento Serv. Comp. Danone 20.5", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-21", "evento": "Evento Peya Marga Día 3 21.5", "cliente": "Peya Marga Día", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-21", "evento": "Evento Danone Almuerzo 21.5", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-21", "evento": "Evento Danone Coffee Rave ", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-21", "evento": "Evento Danone Town Hall SN ", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-22", "evento": "Evento Almuerzo EY 22.5", "cliente": "Almuerzo EY 22.5", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-22", "evento": "Evento Natali Microsoft", "cliente": "Microsoft", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-22", "evento": "Evento Serv. Comp. Danone 22.5", "cliente": "Danone", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-23", "evento": "Casamiento Sol y Nacho", "cliente": "Casamiento Sol y", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-24", "evento": "Evento Enrique Videla", "cliente": "Enrique Videla", "encargado": "", "totalSueldos": 0.0, "gastosExtras": 0, "dineroRecibido": 0, "devolucion": 0, "estado": ""}, {"fecha": "2026-05-12", "evento": "12/5 armado desayuno para danone", "cliente": "Danone", "encargado": "Camila", "totalSueldos": 36500.0, "gastosExtras": 0, "dineroRecibido": 40000.0, "devolucion": 3500.0, "estado": "Sobrante"}]};
+
+// ========================================================================
+// ESTADO GLOBAL
+// ========================================================================
+let RAW = {registros: [], cierres: []};
+let FILTERED = {registros: [], cierres: []};
+let CHARTS = {};
+let SORT_STATE = {};
+
+// ========================================================================
+// LOGIN
+// ========================================================================
+const LOGIN_KEY = "lafondiatta_dashboard_auth";
+
+function checkAuth(){
+  if(sessionStorage.getItem(LOGIN_KEY) === "ok"){
+    showApp();
+  }
+}
+
+function attemptLogin(){
+  const val = document.getElementById("password-input").value;
+  const err = document.getElementById("login-error");
+  if(val === CONFIG.password){
+    sessionStorage.setItem(LOGIN_KEY, "ok");
+    err.textContent = "";
+    showApp();
+  } else {
+    err.textContent = "Contraseña incorrecta.";
+    document.getElementById("password-input").value = "";
+  }
+}
+
+function showApp(){
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  init();
+}
+
+function logout(){
+  sessionStorage.removeItem(LOGIN_KEY);
+  location.reload();
+}
+
+document.getElementById("login-btn").addEventListener("click", attemptLogin);
+document.getElementById("password-input").addEventListener("keypress", e => {
+  if(e.key === "Enter") attemptLogin();
+});
+document.getElementById("btn-logout").addEventListener("click", logout);
+
+// ========================================================================
+// CARGA DE DATOS
+// ========================================================================
+async function cargarDatos(){
+  if(CONFIG.apiUrl && CONFIG.apiUrl.length > 0){
+    try{
+      const r = await fetch(CONFIG.apiUrl);
+      const d = await r.json();
+      if(d && d.registros){ RAW = d; return; }
+    }catch(e){ console.warn("No se pudo conectar al webhook, usando datos embebidos.", e); }
+  }
+  RAW = DATOS_DEMO;
+}
+
+// ========================================================================
+// UTILIDADES
+// ========================================================================
+const fmt$ = n => "$" + (n || 0).toLocaleString("es-AR", {maximumFractionDigits: 0});
+const fmtN = n => (n || 0).toLocaleString("es-AR", {maximumFractionDigits: 0});
+const fmtPct = n => (n || 0).toLocaleString("es-AR", {maximumFractionDigits: 1}) + "%";
+const sum = (arr, key) => arr.reduce((a,b) => a + (b[key] || 0), 0);
+
+function fechaCorta(s){
+  if(!s) return "";
+  const d = new Date(s);
+  return d.toLocaleDateString("es-AR", {day:"2-digit", month:"2-digit", year:"2-digit"});
+}
+
+// ========================================================================
+// FILTROS
+// ========================================================================
+function poblarFiltros(){
+  const fillSelect = (id, values) => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos</option>' +
+      values.sort().map(v => `<option value="${v}">${v}</option>`).join("");
+    if(cur) sel.value = cur;
+  };
+
+  const unique = (arr, key) => [...new Set(arr.map(r => r[key]).filter(v => v))];
+
+  fillSelect("filter-cliente",   unique(RAW.registros, "cliente"));
+  fillSelect("filter-evento",    unique(RAW.registros, "evento"));
+  fillSelect("filter-empleado",  unique(RAW.registros, "empleado"));
+  fillSelect("filter-encargado", unique(RAW.registros, "encargado"));
+  fillSelect("filter-zona",      unique(RAW.registros, "zona"));
+  fillSelect("filter-funcion",   unique(RAW.registros, "funcion"));
+
+  // Set default date range
+  const fechas = RAW.registros.map(r => r.fecha).filter(f => f).sort();
+  if(fechas.length && !document.getElementById("filter-from").value){
+    document.getElementById("filter-from").value = fechas[0];
+    document.getElementById("filter-to").value = fechas[fechas.length-1];
+  }
+}
+
+function aplicarFiltros(){
+  const from = document.getElementById("filter-from").value;
+  const to = document.getElementById("filter-to").value;
+  const cli = document.getElementById("filter-cliente").value;
+  const evt = document.getElementById("filter-evento").value;
+  const emp = document.getElementById("filter-empleado").value;
+  const enc = document.getElementById("filter-encargado").value;
+  const zon = document.getElementById("filter-zona").value;
+  const fun = document.getElementById("filter-funcion").value;
+  const est = document.getElementById("filter-estado").value;
+
+  const cierresPorEvento = {};
+  RAW.cierres.forEach(c => {cierresPorEvento[c.evento] = c.estado || "Sin cierre"});
+
+  FILTERED.registros = RAW.registros.filter(r => {
+    if(from && r.fecha < from) return false;
+    if(to && r.fecha > to) return false;
+    if(cli && r.cliente !== cli) return false;
+    if(evt && r.evento !== evt) return false;
+    if(emp && r.empleado !== emp) return false;
+    if(enc && r.encargado !== enc) return false;
+    if(zon && r.zona !== zon) return false;
+    if(fun && r.funcion !== fun) return false;
+    if(est){
+      const e = cierresPorEvento[r.evento] || "Sin cierre";
+      if(est === "Sin cierre" && e !== "Sin cierre") return false;
+      if(est !== "Sin cierre" && e !== est) return false;
+    }
+    return true;
+  });
+
+  // Cierres filtrados: por fecha y por eventos que sobrevivieron
+  const eventosVisibles = new Set(FILTERED.registros.map(r => r.evento));
+  FILTERED.cierres = RAW.cierres.filter(c => {
+    if(from && c.fecha < from) return false;
+    if(to && c.fecha > to) return false;
+    if(cli && c.cliente !== cli) return false;
+    if(enc && c.encargado !== enc) return false;
+    if(evt && c.evento !== evt) return false;
+    if(est && (c.estado || "Sin cierre") !== est) return false;
+    // Si hay otros filtros activos, mostrar solo cierres de eventos visibles
+    if(emp || zon || fun){
+      return eventosVisibles.has(c.evento);
+    }
+    return true;
+  });
+}
+
+function limpiarFiltros(){
+  ["filter-cliente","filter-evento","filter-empleado","filter-encargado",
+   "filter-zona","filter-funcion","filter-estado"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  const fechas = RAW.registros.map(r => r.fecha).filter(f => f).sort();
+  if(fechas.length){
+    document.getElementById("filter-from").value = fechas[0];
+    document.getElementById("filter-to").value = fechas[fechas.length-1];
+  }
+  refresh();
+}
+
+// ========================================================================
+// KPIs
+// ========================================================================
+function renderKPIs(){
+  const regs = FILTERED.registros;
+  const total = sum(regs, "total");
+  const eventos = new Set(regs.map(r => r.evento)).size;
+  const empleados = new Set(regs.map(r => r.empleado)).size;
+  const clientes = new Set(regs.map(r => r.cliente)).size;
+  const horas = sum(regs, "horas");
+  const viaticos = sum(regs, "viaticos");
+  const cd = sum(regs, "adicionalCD");
+  const promEv = eventos ? total / eventos : 0;
+
+  document.getElementById("kpi-total").textContent = fmt$(total);
+  document.getElementById("kpi-total-hint").textContent = regs.length + " registros";
+  document.getElementById("kpi-eventos").textContent = fmtN(eventos);
+  document.getElementById("kpi-eventos-hint").textContent = clientes + " clientes";
+  document.getElementById("kpi-prom-evento").textContent = fmt$(promEv);
+  document.getElementById("kpi-empleados").textContent = fmtN(empleados);
+  document.getElementById("kpi-horas").textContent = fmtN(horas) + " hs";
+  document.getElementById("kpi-horas-hint").textContent = empleados ? "Prom: " + fmtN(horas/empleados) + " hs/emp" : "—";
+  document.getElementById("kpi-viaticos").textContent = fmt$(viaticos);
+  document.getElementById("kpi-viaticos-hint").textContent = total ? fmtPct(viaticos/total*100) + " del total" : "—";
+  document.getElementById("kpi-cd").textContent = fmt$(cd);
+  document.getElementById("kpi-cd-hint").textContent = total ? fmtPct(cd/total*100) + " del total" : "—";
+  document.getElementById("kpi-clientes").textContent = fmtN(clientes);
+}
+
+// ========================================================================
+// ALERTAS OPERATIVAS
+// ========================================================================
+function renderAlertas(){
+  const regs = FILTERED.registros;
+  const cierres = FILTERED.cierres;
+  const eventosConCierre = new Set(cierres.map(c => c.evento));
+  const eventosEnReg = new Set(regs.map(r => r.evento));
+  const sinCierre = [...eventosEnReg].filter(e => !eventosConCierre.has(e));
+  const faltantes = cierres.filter(c => c.estado === "Faltante");
+  const sinZona = new Set(regs.filter(r => !r.zona || r.zona === "" || r.zona === "nan").map(r => r.empleado));
+
+  const items = [];
+  if(sinCierre.length){
+    items.push(`<div class="alert-item"><strong>${sinCierre.length}</strong> eventos sin cierre financiero cargado</div>`);
+  }
+  if(faltantes.length){
+    const totalFalt = sum(faltantes, "devolucion");
+    items.push(`<div class="alert-item"><strong>${faltantes.length}</strong> cierres con estado FALTANTE (${fmt$(Math.abs(totalFalt))})</div>`);
+  }
+  if(sinZona.size){
+    items.push(`<div class="alert-item"><strong>${sinZona.size}</strong> empleados sin zona asignada</div>`);
+  }
+
+  const box = document.getElementById("alerts-box");
+  if(items.length){
+    document.getElementById("alerts-list").innerHTML = items.join("");
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+  }
+}
+
+// ========================================================================
+// GRAFICOS
+// ========================================================================
+const baseChartOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { labels: { color: CONFIG.colors.tiza, font: { family: "Roboto", size: 11 } } }
+  }
+};
+
+function destroyChart(key){
+  if(CHARTS[key]){ CHARTS[key].destroy(); delete CHARTS[key]; }
+}
+
+function renderEvolucion(){
+  const regs = FILTERED.registros;
+  // agrupar por fecha
+  const porFecha = {};
+  regs.forEach(r => {
+    if(!r.fecha) return;
+    porFecha[r.fecha] = (porFecha[r.fecha] || 0) + r.total;
+  });
+  const fechas = Object.keys(porFecha).sort();
+  const valores = fechas.map(f => porFecha[f]);
+
+  destroyChart("evolucion");
+  const ctx = document.getElementById("chart-evolucion").getContext("2d");
+  CHARTS.evolucion = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: fechas.map(f => fechaCorta(f)),
+      datasets: [{
+        label: "Sueldos $",
+        data: valores,
+        borderColor: CONFIG.colors.marron,
+        backgroundColor: CONFIG.colors.marron + "30",
+        fill: true,
+        tension: 0.25,
+        pointBackgroundColor: CONFIG.colors.marron,
+        pointBorderColor: CONFIG.colors.tiza,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      ...baseChartOpts,
+      scales: {
+        x: { ticks: { color: CONFIG.colors.gris, maxTicksLimit: 12 }, grid: { color: "#2a2826" } },
+        y: { ticks: { color: CONFIG.colors.gris, callback: v => "$" + (v/1000).toFixed(0) + "k" }, grid: { color: "#2a2826" } }
+      }
+    }
+  });
+}
+
+function renderClientes(){
+  const regs = FILTERED.registros;
+  const porCli = {};
+  regs.forEach(r => { porCli[r.cliente] = (porCli[r.cliente] || 0) + r.total });
+  const arr = Object.entries(porCli).sort((a,b) => b[1]-a[1]).slice(0,10);
+
+  destroyChart("clientes");
+  const ctx = document.getElementById("chart-clientes").getContext("2d");
+  CHARTS.clientes = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: arr.map(x => x[0]),
+      datasets: [{
+        label: "Sueldos $",
+        data: arr.map(x => x[1]),
+        backgroundColor: CONFIG.colors.marron,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      ...baseChartOpts,
+      indexAxis: "y",
+      plugins: {legend:{display:false}},
+      scales: {
+        x: { ticks: { color: CONFIG.colors.gris, callback: v => "$" + (v/1000).toFixed(0) + "k" }, grid: { color: "#2a2826" } },
+        y: { ticks: { color: CONFIG.colors.gris }, grid: { display:false } }
+      }
+    }
+  });
+}
+
+function renderFuncion(){
+  const regs = FILTERED.registros;
+  const porFun = {};
+  regs.forEach(r => { porFun[r.funcion] = (porFun[r.funcion] || 0) + r.total });
+  const arr = Object.entries(porFun).sort((a,b) => b[1]-a[1]);
+
+  destroyChart("funcion");
+  const ctx = document.getElementById("chart-funcion").getContext("2d");
+  CHARTS.funcion = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: arr.map(x => x[0]),
+      datasets: [{
+        data: arr.map(x => x[1]),
+        backgroundColor: CONFIG.paletteSerie,
+        borderColor: CONFIG.colors.carbon,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      ...baseChartOpts,
+      plugins: {
+        legend: { position: "bottom", labels: { color: CONFIG.colors.tiza, font: { size: 10 }, padding: 8 } }
+      }
+    }
+  });
+}
+
+function renderZona(){
+  const regs = FILTERED.registros;
+  const porZ = {};
+  regs.forEach(r => {
+    const z = r.zona || "Sin zona";
+    if(!porZ[z]) porZ[z] = {viaticos:0, total:0};
+    porZ[z].viaticos += r.viaticos;
+    porZ[z].total += r.total;
+  });
+  const labels = Object.keys(porZ);
+
+  destroyChart("zona");
+  const ctx = document.getElementById("chart-zona").getContext("2d");
+  CHARTS.zona = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "Viáticos", data: labels.map(l => porZ[l].viaticos), backgroundColor: CONFIG.colors.marron, borderRadius: 3 },
+        { label: "Total", data: labels.map(l => porZ[l].total), backgroundColor: CONFIG.colors.beige, borderRadius: 3 }
+      ]
+    },
+    options: {
+      ...baseChartOpts,
+      scales: {
+        x: { ticks: { color: CONFIG.colors.gris }, grid: { display:false } },
+        y: { ticks: { color: CONFIG.colors.gris, callback: v => "$" + (v/1000).toFixed(0) + "k" }, grid: { color: "#2a2826" } }
+      }
+    }
+  });
+}
+
+function renderEncargado(){
+  const regs = FILTERED.registros;
+  const porE = {};
+  regs.forEach(r => {
+    const e = r.encargado || "Sin asignar";
+    if(!porE[e]) porE[e] = {total:0, eventos:new Set()};
+    porE[e].total += r.total;
+    porE[e].eventos.add(r.evento);
+  });
+  const labels = Object.keys(porE);
+
+  destroyChart("encargado");
+  const ctx = document.getElementById("chart-encargado").getContext("2d");
+  CHARTS.encargado = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Sueldos gestionados",
+        data: labels.map(l => porE[l].total),
+        backgroundColor: CONFIG.paletteSerie,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      ...baseChartOpts,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: ctx => {
+              const enc = labels[ctx.dataIndex];
+              return porE[enc].eventos.size + " eventos";
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: CONFIG.colors.gris }, grid: { display:false } },
+        y: { ticks: { color: CONFIG.colors.gris, callback: v => "$" + (v/1000).toFixed(0) + "k" }, grid: { color: "#2a2826" } }
+      }
+    }
+  });
+}
+
+// ========================================================================
+// TABLAS
+// ========================================================================
+function renderTablaEventos(){
+  const regs = FILTERED.registros;
+  const cieMap = {};
+  FILTERED.cierres.forEach(c => { cieMap[c.evento] = c });
+
+  const map = {};
+  regs.forEach(r => {
+    if(!map[r.evento]){
+      map[r.evento] = {
+        fecha: r.fecha,
+        evento: r.evento,
+        cliente: r.cliente,
+        encargado: r.encargado,
+        empleados: new Set(),
+        horas: 0,
+        total: 0
+      };
+    }
+    map[r.evento].empleados.add(r.empleado);
+    map[r.evento].horas += r.horas;
+    map[r.evento].total += r.total;
+  });
+
+  let arr = Object.values(map).map(o => {
+    const c = cieMap[o.evento] || {};
+    return {
+      ...o,
+      empleados: o.empleados.size,
+      gastos: c.gastosExtras || 0,
+      dinero: c.dineroRecibido || 0,
+      estado: c.estado || "Sin cierre"
+    };
+  });
+
+  arr = sortArr(arr, "tabla-eventos", "fecha", "desc");
+
+  document.getElementById("mini-eventos").innerHTML = `
+    <div class="mini-stat"><strong>${arr.length}</strong> eventos</div>
+    <div class="mini-stat">Total: <strong>${fmt$(arr.reduce((a,b)=>a+b.total,0))}</strong></div>
+    <div class="mini-stat">Gastos: <strong>${fmt$(arr.reduce((a,b)=>a+b.gastos,0))}</strong></div>
+  `;
+
+  const tb = document.querySelector("#tabla-eventos tbody");
+  tb.innerHTML = arr.map(r => {
+    const badge = r.estado === "Sobrante" ? '<span class="badge badge-sobrante">Sobrante</span>'
+                : r.estado === "Faltante" ? '<span class="badge badge-faltante">Faltante</span>'
+                : '<span class="badge badge-pendiente">Sin cierre</span>';
+    return `<tr>
+      <td>${fechaCorta(r.fecha)}</td>
+      <td>${r.evento}</td>
+      <td>${r.cliente || "—"}</td>
+      <td>${r.encargado || "—"}</td>
+      <td class="num">${r.empleados}</td>
+      <td class="num">${fmtN(r.horas)}</td>
+      <td class="num">${fmt$(r.total)}</td>
+      <td class="num">${fmt$(r.gastos)}</td>
+      <td class="num">${fmt$(r.dinero)}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderTablaEmpleados(){
+  const regs = FILTERED.registros;
+  const map = {};
+  regs.forEach(r => {
+    if(!map[r.empleado]){
+      map[r.empleado] = {
+        empleado: r.empleado,
+        zona: r.zona,
+        eventos: new Set(),
+        horas: 0,
+        subtotal: 0,
+        cd: 0,
+        viaticos: 0,
+        total: 0
+      };
+    }
+    const m = map[r.empleado];
+    m.eventos.add(r.evento);
+    m.horas += r.horas;
+    m.subtotal += r.subtotalHoras;
+    m.cd += r.adicionalCD;
+    m.viaticos += r.viaticos;
+    m.total += r.total;
+  });
+
+  let arr = Object.values(map).map(o => ({
+    ...o,
+    eventos: o.eventos.size,
+    prom: o.eventos.size ? o.total/o.eventos.size : 0
+  }));
+
+  arr = sortArr(arr, "tabla-empleados", "total", "desc");
+
+  document.getElementById("mini-empleados").innerHTML = `
+    <div class="mini-stat"><strong>${arr.length}</strong> empleados</div>
+    <div class="mini-stat">Total: <strong>${fmt$(arr.reduce((a,b)=>a+b.total,0))}</strong></div>
+    <div class="mini-stat">Prom/empleado: <strong>${fmt$(arr.length ? arr.reduce((a,b)=>a+b.total,0)/arr.length : 0)}</strong></div>
+  `;
+
+  document.querySelector("#tabla-empleados tbody").innerHTML = arr.map(r => `
+    <tr>
+      <td>${r.empleado}</td>
+      <td>${r.zona || "—"}</td>
+      <td class="num">${r.eventos}</td>
+      <td class="num">${fmtN(r.horas)}</td>
+      <td class="num">${fmt$(r.subtotal)}</td>
+      <td class="num">${fmt$(r.cd)}</td>
+      <td class="num">${fmt$(r.viaticos)}</td>
+      <td class="num">${fmt$(r.total)}</td>
+      <td class="num">${fmt$(r.prom)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderTablaClientes(){
+  const regs = FILTERED.registros;
+  const totalGral = sum(regs, "total");
+  const map = {};
+  regs.forEach(r => {
+    if(!map[r.cliente]){
+      map[r.cliente] = { cliente: r.cliente, eventos: new Set(), horas: 0, total: 0 };
+    }
+    map[r.cliente].eventos.add(r.evento);
+    map[r.cliente].horas += r.horas;
+    map[r.cliente].total += r.total;
+  });
+
+  let arr = Object.values(map).map(o => ({
+    ...o,
+    eventos: o.eventos.size,
+    prom: o.eventos.size ? o.total/o.eventos.size : 0,
+    share: totalGral ? o.total/totalGral*100 : 0
+  }));
+
+  arr = sortArr(arr, "tabla-clientes", "total", "desc");
+
+  document.getElementById("mini-clientes").innerHTML = `
+    <div class="mini-stat"><strong>${arr.length}</strong> clientes</div>
+    <div class="mini-stat">Top 3: <strong>${fmtPct(arr.slice(0,3).reduce((a,b)=>a+b.share,0))}</strong> del total</div>
+  `;
+
+  document.querySelector("#tabla-clientes tbody").innerHTML = arr.map(r => `
+    <tr>
+      <td>${r.cliente}</td>
+      <td class="num">${r.eventos}</td>
+      <td class="num">${fmtN(r.horas)}</td>
+      <td class="num">${fmt$(r.total)}</td>
+      <td class="num">${fmt$(r.prom)}</td>
+      <td class="num">${fmtPct(r.share)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderTablaCierres(){
+  let arr = [...FILTERED.cierres];
+  arr = sortArr(arr, "tabla-cierres", "fecha", "desc");
+
+  const sobrante = arr.filter(c => c.estado === "Sobrante");
+  const faltante = arr.filter(c => c.estado === "Faltante");
+
+  document.getElementById("mini-cierres").innerHTML = `
+    <div class="mini-stat"><strong>${arr.length}</strong> cierres</div>
+    <div class="mini-stat">Sobrantes: <strong>${sobrante.length}</strong> · ${fmt$(sum(sobrante,"devolucion"))}</div>
+    <div class="mini-stat">Faltantes: <strong>${faltante.length}</strong> · ${fmt$(sum(faltante,"devolucion"))}</div>
+  `;
+
+  document.querySelector("#tabla-cierres tbody").innerHTML = arr.map(r => {
+    const badge = r.estado === "Sobrante" ? '<span class="badge badge-sobrante">Sobrante</span>'
+                : r.estado === "Faltante" ? '<span class="badge badge-faltante">Faltante</span>'
+                : '<span class="badge badge-pendiente">' + (r.estado || "—") + '</span>';
+    return `<tr>
+      <td>${fechaCorta(r.fecha)}</td>
+      <td>${r.evento}</td>
+      <td>${r.encargado || "—"}</td>
+      <td class="num">${fmt$(r.totalSueldos)}</td>
+      <td class="num">${fmt$(r.gastosExtras)}</td>
+      <td class="num">${fmt$(r.dineroRecibido)}</td>
+      <td class="num">${fmt$(r.devolucion)}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ========================================================================
+// SORTING
+// ========================================================================
+function sortArr(arr, tableId, defaultKey, defaultDir){
+  const state = SORT_STATE[tableId] || {key: defaultKey, dir: defaultDir};
+  return arr.sort((a,b) => {
+    let va = a[state.key], vb = b[state.key];
+    if(typeof va === "string") va = va.toLowerCase();
+    if(typeof vb === "string") vb = vb.toLowerCase();
+    if(va < vb) return state.dir === "asc" ? -1 : 1;
+    if(va > vb) return state.dir === "asc" ? 1 : -1;
+    return 0;
+  });
+}
+
+function attachSortHandlers(){
+  document.querySelectorAll("thead th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const tableId = th.closest("table").id;
+      const key = th.dataset.sort;
+      const cur = SORT_STATE[tableId] || {};
+      SORT_STATE[tableId] = {key, dir: (cur.key === key && cur.dir === "asc") ? "desc" : "asc"};
+      refresh();
+    });
+  });
+}
+
+// ========================================================================
+// EXPORT CSV
+// ========================================================================
+function exportCSV(tableId, filename){
+  const t = document.getElementById(tableId);
+  const rows = [];
+  const heads = [...t.querySelectorAll("thead th")].map(th => th.textContent.trim());
+  rows.push(heads.join(";"));
+  t.querySelectorAll("tbody tr").forEach(tr => {
+    const cells = [...tr.querySelectorAll("td")].map(td => {
+      let txt = td.textContent.trim().replace(/\s+/g, " ");
+      if(txt.includes(";") || txt.includes('"')) txt = '"' + txt.replace(/"/g,'""') + '"';
+      return txt;
+    });
+    rows.push(cells.join(";"));
+  });
+  const blob = new Blob(["\ufeff" + rows.join("\n")], {type: "text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ========================================================================
+// TABS
+// ========================================================================
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById(t.dataset.tab).classList.add("active");
+  });
+});
+
+// ========================================================================
+// REFRESH GENERAL
+// ========================================================================
+function refresh(){
+  aplicarFiltros();
+  renderKPIs();
+  renderAlertas();
+  renderEvolucion();
+  renderClientes();
+  renderFuncion();
+  renderZona();
+  renderEncargado();
+  renderTablaEventos();
+  renderTablaEmpleados();
+  renderTablaClientes();
+  renderTablaCierres();
+}
+
+// ========================================================================
+// INIT
+// ========================================================================
+async function init(){
+  await cargarDatos();
+  poblarFiltros();
+
+  ["filter-from","filter-to","filter-cliente","filter-evento","filter-empleado",
+   "filter-encargado","filter-zona","filter-funcion","filter-estado"].forEach(id => {
+    document.getElementById(id).addEventListener("change", refresh);
+  });
+  document.getElementById("btn-clear-filters").addEventListener("click", limpiarFiltros);
+  document.getElementById("btn-refresh").addEventListener("click", async () => {
+    await cargarDatos();
+    poblarFiltros();
+    refresh();
+    document.getElementById("updated-label").textContent = "Actualizado: " + new Date().toLocaleString("es-AR");
+  });
+
+  attachSortHandlers();
+  refresh();
+  document.getElementById("updated-label").textContent = "Actualizado: " + new Date().toLocaleString("es-AR");
+}
+
+// arranque
+checkAuth();
+</script>
+</body>
+</html>
